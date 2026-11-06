@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APORIA · interactions
+   APORIA · interactions (communes à toutes les pages)
    Aucune bibliothèque. Sans JavaScript, tout le contenu reste lisible :
    les effets ne s'activent que si la classe "js" est posée sur <html>.
    ========================================================================== */
@@ -19,8 +19,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initScrollEffects();
   initReveal();
   initManifesto();
-  initCounters();
-  initTabs();
   initContact();
   $$("[data-year]").forEach((el) => (el.textContent = new Date().getFullYear()));
 });
@@ -31,19 +29,25 @@ function initHeader() {
   const hero = $(".hero");
   const toggle = $("[data-nav-toggle]");
   const nav = $("#menu");
-  const links = $$("a[href^='#']", nav);
+  const links = $$("a", nav);
 
-  new IntersectionObserver(([entry]) => header.classList.toggle("is-solid", !entry.isIntersecting), {
-    rootMargin: "-80px 0px 0px 0px",
-  }).observe(hero);
+  // Pages annexes : pas d'accueil plein écran, l'en-tête est opaque d'emblée
+  if (hero) {
+    new IntersectionObserver(([entry]) => header.classList.toggle("is-solid", !entry.isIntersecting), {
+      rootMargin: "-80px 0px 0px 0px",
+    }).observe(hero);
+  } else {
+    header.classList.add("is-solid");
+  }
 
-  // Lien actif = section qui occupe le milieu de l'écran
-  const sections = links.map((a) => $(a.hash)).filter(Boolean);
+  // Lien actif = section qui occupe le milieu de l'écran (page d'accueil)
+  const anchors = links.filter((a) => a.pathname === location.pathname && a.hash);
+  const sections = anchors.map((a) => $(a.hash)).filter(Boolean);
   const spy = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
-        links.forEach((a) => a.classList.toggle("is-active", a.hash === `#${entry.target.id}`));
+        anchors.forEach((a) => a.classList.toggle("is-active", a.hash === `#${entry.target.id}`));
       });
     },
     { rootMargin: "-45% 0px -50% 0px" }
@@ -69,7 +73,7 @@ function initScrollEffects() {
   const update = () => {
     const max = root.scrollHeight - innerHeight;
     root.style.setProperty("--progress", max > 0 ? (scrollY / max).toFixed(4) : 0);
-    if (!reduceMotion) {
+    if (hero && !reduceMotion) {
       const shift = Math.min(Math.max(scrollY / hero.offsetHeight, 0), 1);
       hero.style.setProperty("--hero-shift", shift.toFixed(3));
     }
@@ -97,112 +101,15 @@ function initReveal() {
   $$("[data-reveal]").forEach((el) => io.observe(el));
 }
 
-/* Manifesto : chaque ligne s'éclaire en passant au centre, suite dépliable -- */
+/* Manifesto : chaque ligne s'éclaire en passant au centre de l'écran -------- */
 function initManifesto() {
-  const box = $("[data-manifesto]");
-  if (!box) return;
-
+  const lines = $$(".manifesto__line");
+  if (!lines.length) return;
   const lit = new IntersectionObserver(
     (entries) => entries.forEach((e) => e.isIntersecting && e.target.classList.add("is-lit")),
     { rootMargin: "-25% 0px -35% 0px" }
   );
-  $$(".manifesto__line", box).forEach((line) => lit.observe(line));
-
-  const more = $("[data-manifesto-more]", box);
-  const toggle = $("[data-manifesto-toggle]", box);
-  const label = $("span", toggle);
-
-  toggle.addEventListener("click", () => {
-    const open = toggle.getAttribute("aria-expanded") !== "true";
-    toggle.setAttribute("aria-expanded", String(open));
-    label.textContent = open ? toggle.dataset.labelLess : toggle.dataset.labelMore;
-
-    // Animation de hauteur : on part de la hauteur réelle du contenu
-    more.style.maxHeight = `${more.scrollHeight}px`;
-    if (open) {
-      more.addEventListener("transitionend", () => (more.style.maxHeight = "none"), { once: true });
-    } else {
-      requestAnimationFrame(() => (more.style.maxHeight = "0px"));
-      box.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
-    }
-  });
-}
-
-/* Compteurs de l'équation de la tribu -------------------------------------- */
-function initCounters() {
-  const io = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        io.unobserve(entry.target);
-        countUp(entry.target);
-      });
-    },
-    { threshold: 0.6 }
-  );
-  $$("[data-count]").forEach((el) => {
-    if (!reduceMotion) el.textContent = "0";
-    io.observe(el);
-  });
-
-  function countUp(el) {
-    const target = Number(el.dataset.count);
-    if (reduceMotion) return (el.textContent = target);
-    const duration = 1400;
-    const start = performance.now();
-    const step = (now) => {
-      const t = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - t, 3);
-      el.textContent = Math.round(target * eased);
-      if (t < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }
-}
-
-/* Onglets des parcours (accessibles au clavier) ---------------------------- */
-function initTabs() {
-  $$("[data-tabs]").forEach((wrap) => {
-    const tabs = $$("[role='tab']", wrap);
-    const indicator = $(".tabs__indicator", wrap);
-
-    const moveIndicator = (tab) => {
-      indicator.style.setProperty("--w", `${tab.offsetWidth}px`);
-      indicator.style.setProperty("--x", `${tab.offsetLeft}px`);
-    };
-
-    const select = (tab, focus = false) => {
-      tabs.forEach((t) => {
-        const on = t === tab;
-        t.setAttribute("aria-selected", String(on));
-        t.tabIndex = on ? 0 : -1;
-        const panel = $(`#${t.getAttribute("aria-controls")}`);
-        panel.hidden = !on;
-        if (on) {
-          panel.classList.remove("is-entering");
-          void panel.offsetWidth; // relance l'animation
-          panel.classList.add("is-entering");
-        }
-      });
-      moveIndicator(tab);
-      if (focus) tab.focus();
-    };
-
-    tabs.forEach((tab, i) => {
-      tab.addEventListener("click", () => select(tab));
-      tab.addEventListener("keydown", (e) => {
-        const dir = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
-        if (!dir) return;
-        e.preventDefault();
-        select(tabs[(i + dir + tabs.length) % tabs.length], true);
-      });
-    });
-
-    const current = tabs.find((t) => t.getAttribute("aria-selected") === "true") || tabs[0];
-    moveIndicator(current);
-    addEventListener("resize", () => moveIndicator(tabs.find((t) => t.tabIndex === 0) || current));
-    document.fonts?.ready.then(() => moveIndicator(tabs.find((t) => t.tabIndex === 0) || current));
-  });
+  lines.forEach((line) => lit.observe(line));
 }
 
 /* Boutons de contact -------------------------------------------------------- */
