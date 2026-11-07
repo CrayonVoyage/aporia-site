@@ -320,7 +320,7 @@ strong { color: var(--ink); font-weight: 650; }
 }
 .dawn .title { color: #fff; margin-bottom: 1.5rem; }
 .dawn__logo { width: 6.5rem; margin: 0 auto 2.5rem; }
-.dawn__text { font-size: var(--fs-lead); color: rgba(255, 255, 255, .95); margin-bottom: 2.25rem; }
+.dawn__text { font-size: var(--fs-lead); color: rgba(255, 255, 255, .95); max-width: 38rem; margin: 0 auto 2.25rem; text-wrap: pretty; }
 
 /* 11. Pied de page --------------------------------------------------------------- */
 .site-footer { padding-block: 4rem calc(3rem + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line); text-align: center; }
