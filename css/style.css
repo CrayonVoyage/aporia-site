@@ -261,7 +261,7 @@ strong { color: var(--ink); font-weight: 650; }
   max-width: 44rem; text-wrap: balance;
 }
 .manifesto__line:last-child { margin-bottom: 0; }
-.manifesto__line--accent { font-style: italic; color: #ffd9a8; font-size: clamp(1.8rem, 1.3rem + 2vw, 3rem); }
+.manifesto__line--accent { color: #ffd9a8; }
 .band { position: relative; isolation: isolate; overflow: hidden; padding-block: clamp(5rem, 11vw, 8.5rem); text-align: center; }
 .band__sky { position: absolute; inset: 0; z-index: -1; background: #f3d9c0 url("/assets/img/ciel.jpg") center 40% / cover no-repeat; }
 .band__sky::after { content: ""; position: absolute; inset: 0; background: rgba(255, 255, 255, .55); }
