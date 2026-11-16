@@ -392,6 +392,7 @@ strong { color: var(--ink); font-weight: 650; }
 .person__role { font-size: .82rem; font-weight: 650; letter-spacing: .24em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
 .person__story { color: var(--ink); line-height: 1.55; margin: 0; text-wrap: pretty; }
 .person__story cite { font-style: italic; }
+.person__story + .person__story { margin-top: .9em; }
 
 .legal h2 { font-size: 1.35rem; }
 .legal address { font-style: normal; }
